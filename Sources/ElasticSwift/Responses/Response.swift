@@ -198,11 +198,25 @@ public struct SearchHits<T: Codable>: Codable, Equatable where T: Equatable {
         self.maxScore = maxScore
         self.hits = hits
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        self.maxScore = try container.decodeDecimalIfPresent(forKey: CodingKeys.maxScore)
+        self.hits = try container.decode([SearchHit<T>].self, forKey: CodingKeys.hits)
+        
+        let totalInfo = try container.nestedContainer(keyedBy: TotalKeys.self, forKey: CodingKeys.total)
+        self.total = try totalInfo.decode(Int.self, forKey: TotalKeys.value)
+    }
 
     enum CodingKeys: String, CodingKey {
         case total
         case maxScore = "max_score"
         case hits
+    }
+    
+    enum TotalKeys: String, CodingKey {
+        case value
     }
 }
 
